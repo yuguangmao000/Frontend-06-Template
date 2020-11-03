@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作业</title>
+    <style>
+        .cell {
+           width: 100px; 
+           height: 100px; 
+           background-color: green;
+           display: inline-block;
+           border: solid 1px white;
+           vertical-align: middle;
+           line-height: 100px;
+           font-size: 50px;
+           text-align: center;
+        }
+    </style>
+</head>
+<body>
+   <div id="board"></div> 
+</body>
+<script>
+    let pattern = [
+        0,0,0,
+        0,2,0,
+        0,0,0,
+    ]
+
+    let color = 1
+    const clone = pattern => {
+        return Object.create(pattern)
+    }
+    // 即将落子方胜负预判
+    const willWin = () => {
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (pattern[i*3+j]) continue
+                let temp = clone(pattern)
+                temp[i*3+j] = color
+                if (check(temp, color)) {
+                    // return true
+                    return [i,j]
+                }
+            }
+        }
+        // return false
+        return null
+    }
+    // 返回下一次最好的点和结果 局面胜负预判
+    const baseChoice = (pattern, color) => {
+        let point = willWin(parent, color)
+        if (point) {
+            return {
+                point,
+                result: 1
+            }
+        }
+        // -1=>输 | 0=>和 | 1=>赢
+        let result = -1
+        outer:for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                // 跳过已经落子的位置
+                if (pattern[i*3+j] !== 0) {
+                    continue
+                }
+                let temp = clone(pattern)
+                temp[i*3+j] = color
+                // 预估下一次对方的结果，通过递归调用bestChoice方法，找到对方最好的结果，直到棋盘上所有能落子的位置都尝试一遍为止
+                let r = baseChoice(temp, 3 - color).result
+                if (-r >= result) {
+                    // 我方结果是对方相反的结果，这个结果对应的点是[i,j]
+                    result = -r
+                    point = [i,j]
+                }
+                // 剪枝: 如果我方已经能赢了，跳出循环
+                if (result == 1) {
+                    break outer
+                }
+            }
+        }
+        return {
+            point: point,
+            result: point ? result : 0 // 当point为null时，说明已经无点可走，和棋，为0
+        }
+    }
+    const move = (x,y) => {
+        pattern[x*3+y] = color
+
+        if (check(pattern, color)) {
+            alert(color == 2 ? 'x is winner!' : 'o is winner!')
+        }
+
+        color = 3 - color
+    
+        console.log(baseChoice(pattern, color))
+
+        show()
+        // if (willWin(pattern, color) && !check(pattern, color)) {
+        //     alert(color == 2 ? 'x will winner!' : 'o will winner!')
+        // }
+    }
+    // 检查胜负
+    const check = (pattern, color) => {
+        for (let i = 0; i < 3; i++) {
+            let win = true
+            for (let j = 0; j < 3; j++) {
+                if (pattern[i*3+j] !== color) {
+                    win = false
+                }
+            }
+            if (win) {
+                return true
+            }
+        }
+        for (let i = 0; i < 3; i++) {
+            let win = true
+            for (let j = 0; j < 3; j++) {
+                if (pattern[j*3+i] !== color) {
+                    win = false
+                }
+            }
+            if (win) {
+                return true
+            }
+        }
+        // 正斜线 /
+        {
+            let win = true
+            for (let i = 0; i < 3; i++) {
+                if (pattern[i*3+2-i] !== color) {
+                    win = false
+                }
+            }
+            if (win) {
+                return true
+            }
+        }
+         // 反斜线 \
+        {
+            let win = true
+            for (let i = 0; i < 3; i++) {
+                if (pattern[i*3+i] !== color) {
+                    win = false
+                }
+            }
+            if (win) {
+                return true
+            }
+        }
+        return false
+    }
+    // 渲染
+    const show = () =>{
+        const board = document.getElementById('board')
+        board.innerHTML = ''
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                const cell = document.createElement('div')
+                const cellValue = pattern[i*3+j]
+                cell.classList.add('cell')
+                cell.innerText = cellValue == 2 ? '×' : cellValue == 1 ? 'o' : '';
+                cell.addEventListener('click', () => userMove(i,j)) // AI
+                // cell.addEventListener('click', () => move(i,j)) // 人vs人
+                board.appendChild(cell)
+            }
+            board.appendChild(document.createElement('br'))
+        }
+    }
+
+    show()
+    // 电脑落子
+    const computerMove = () => {
+        const choice = baseChoice(pattern,color)
+        if (choice.point) {
+            pattern[choice.point[0]*3+choice.point[1]] = color
+            if (check(pattern,color)) {
+                alert(color == 2 ? 'x is winner!' : 'o is winner!')
+            }
+            color = 3-color
+            show()
+        }
+
+    }
+    // 用户落子
+    const userMove = (x,y) => {
+        pattern[x*3+y] = color
+        if (check(pattern,color)) {
+            alert(color == 2 ? 'x is winner!' : 'o is winner!')
+        }
+        color = 3- color
+        show()
+        computerMove()
+    }
+
+</script>
+</html>
