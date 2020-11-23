@@ -34,7 +34,7 @@ class Tree {
                 max = node[$];
                 wordStr = word
             }
-            for (const p of node) {
+            for (let p in node) {
                 visit(node[p], word + p)
             }
         }
