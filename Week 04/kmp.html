@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>kmp</title>
+</head>
+<body>
+<script>
+const kmp = (source, parttern) => {
+    // 计算table
+    const table = new Array(parttern.length).fill(0)
+    {    
+        let i = 1, j = 0
+        while(i< parttern.length) {
+            if (parttern[i] === parttern[j]) {
+                ++j; ++ i;table[i] = j
+            } else {
+                if (j > 0) {
+                    j = table[j]
+                } else {
+                    table[i] = j
+                    ++i
+                }
+            }
+        }
+        // console.log(table)
+    }
+    {    
+        let i = 0, j = 0
+        while(i< source.length) {
+            if (parttern[j] === parttern[i]) {
+                ++j; ++ i;
+            } else {
+                if (j > 0) {
+                    j = table[j]
+                } else {
+                    table[i] = j
+                    ++i
+                }
+            }
+            if (j === parttern.length) {
+                return true
+            }
+        }
+        return false
+        console.log(table)
+    }
+}
+// console.log(kmp('','addaacee'))
+console.log(kmp('asdfasdf','asdffadadsf'))
+</script>
+</body>
+</html>
